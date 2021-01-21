@@ -29,7 +29,7 @@ typedef struct task {
     coop_jmp_buf func_env;
     coop_jmp_buf ctx_env;
     struct task *next;
-    struct task *last;
+    struct task *prev;
 } task_t;
 
 task_t *get_last(task_t *first);
@@ -41,16 +41,12 @@ extern task_t *current_task;
 /**
  * @brief Scheduler for several tasks
  */
-typedef struct {
-    task_t *first_task;
-} coop_context;
+typedef task_t *coop_context;
 
 typedef struct {
     coop_ptr_t size;
     void *stack_bottom; // As acquired by malloc(size)
 } coop_stack;
-
-coop_context make_context();
 
 /**
  * @brief Adds a task to the task queue
@@ -64,13 +60,8 @@ void add_task(coop_context *ctx, task_t *buf, coop_stack stack, void(*call)());
  */
 void start(coop_context *ctx);
 
-/**
- * @brief Runs a task until it yields control
- */
-int pursue_task();
-
 #define yield if (!coop_setjmp(current_task->func_env))coop_longjmp(current_task->ctx_env, 1)
-#define exit if (!coop_setjmp(current_task->func_env))coop_longjmp(current_task->ctx_env, 2)
+#define dump if (!coop_setjmp(current_task->func_env))coop_longjmp(current_task->ctx_env, 2)
 
 #ifdef __cplusplus
 }

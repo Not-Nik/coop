@@ -23,14 +23,14 @@ void my_async_func() {
     puts("Func1: 1");
     yield;
     puts("Func1: 2");
-    exit;
+    dump;
 }
 
 void my_async_func2() {
     puts("Func2: 1");
     yield;
     puts("Func2: 2");
-    exit;
+    dump;
 }
 
 int main() {

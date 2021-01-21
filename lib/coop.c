@@ -6,64 +6,54 @@
 task_t *current_task = 0;
 
 task_t *get_last(task_t *first) {
-    if (first->next == 0 || first->next == first) {
-        return first;
+    task_t *curr = first;
+    while (curr->next != first) {
+        curr = curr->next;
     }
-    return get_last(first->next);
-}
-
-coop_context make_context() {
-    return (coop_context){0};
+    return curr;
 }
 
 void add_task(coop_context *ctx, task_t *buf, coop_stack stack, void (*call)()) {
     buf->call = call;
     buf->stack_base = (coop_ptr_t) (stack.stack_bottom + stack.size);
-    if (!ctx->first_task) {
-        ctx->first_task = buf;
+    if (!*ctx) {
+        *ctx = buf;
     }
-    task_t *last = get_last(ctx->first_task);
-    buf->last = last;
-    buf->next = ctx->first_task;
+    buf->next = *ctx;
+    (*ctx)->prev = buf;
+    task_t *last = get_last(*ctx);
+    buf->prev = last;
     last->next = buf;
-    ctx->first_task->last = buf;
 }
 
 void start(coop_context *ctx) {
-    while (ctx->first_task) {
-        for (current_task = ctx->first_task; current_task; current_task = current_task->next) {
-            if (pursue_task() <= 1) continue;
-
-            if (current_task->next == current_task) {
-                ctx->first_task = 0;
-                break;
+    current_task = *ctx;
+    for (;;) {
+        // Run the `current_task`
+        int i = coop_setjmp(current_task->ctx_env);
+        if (!i) {
+            if (!current_task->was_called) {
+                current_task->was_called = true;
+                stack_pointer = current_task->stack_base;
+                current_task->call();
+            } else {
+                coop_longjmp(current_task->func_env, 1);
             }
+        }
+        // Check whether it wants to dump
+        if (i > 1) {
+            if (current_task->next == current_task)
+                break;
 
-            task_t *last = current_task->last;
+            task_t *prev = current_task->prev;
             task_t *next = current_task->next;
 
-            if (ctx->first_task == current_task) {
-                ctx->first_task = next;
-            }
+            if (*ctx == current_task)
+                *ctx = next; //The iteration part is rather "trivial", we start by setting a global variable
 
-            last->next = next;
-            next->last = last;
+            prev->next = next;
+            next->prev = prev;
         }
+        current_task = current_task->next;
     }
-}
-
-int pursue_task() {
-    int i = coop_setjmp(current_task->ctx_env);
-    if (!i) {
-        if (!current_task->was_called) {
-            current_task->was_called = true;
-            stack_pointer = current_task->stack_base;
-            current_task->call();
-        } else {
-            coop_longjmp(current_task->func_env, 1);
-        }
-    } else {
-        return i;
-    }
-    return 0;
 }
