@@ -48,7 +48,7 @@ int main() {
 ```
 
 ## Pitfalls
-> Most importantly coop isn't tested further that what's in `test.c`
+> Most importantly coop isn't tested further than what's in `test.c`
 
 coop does have two more semi-runtime dependency. Your compiler has to push
 it's rbp value to the stack. If it doesn't, you will get at least the last
