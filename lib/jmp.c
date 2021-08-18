@@ -1,9 +1,6 @@
 // coop (c) Nikolas Wipper 2021
 
 #include "jmp.h"
-
-extern void coop_longjmp_asm();
-
 // This is probably one of the worst pieces of code ever written
 // If you have any concerns raise them, they can't be dumber than
 // the monstrosity that is this code. I'm just going to leave this
@@ -38,5 +35,5 @@ void coop_longjmp(coop_ptr_t *buf, int ret) {
     // therefore a normal would be alright, but
     // you never know what crazy things can be
     // Part of an ABI
-    asm volatile("call _coop_longjmp_asm");
+    asm volatile("jmp _coop_longjmp_asm");
 }

@@ -49,7 +49,7 @@ void start(coop_context *ctx) {
             task_t *next = current_task->next;
 
             if (*ctx == current_task)
-                *ctx = next; //The iteration part is rather "trivial", we start by setting a global variable
+                *ctx = next; // The iteration part is rather "trivial", we start by setting a global variable
 
             prev->next = next;
             next->prev = prev;
