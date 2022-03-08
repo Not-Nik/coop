@@ -1,7 +1,7 @@
 # coop
 Coop is an experimental asynchronous multitasking scheduler that tries to
 run everywhere. It has literally no run time dependencies except for a
-proper x86_64/arm64  machine set to long mode. It's only build-time
+proper x86_64/amd64  machine set to long mode. It's only build-time
 dependency is a C compiler supporting GCC inline assembly. Technically, 
 coop should run, and work, on everything you can compile to, including
 baremetal and even Windows.
